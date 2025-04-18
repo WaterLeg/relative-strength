@@ -25,4 +25,4 @@ jobs:
 
     - name: Run the script
       run: |
-        python relative_strength.py  # or whatever main file you need to run
+        python -m relative_strength  # or whatever main file you need to run

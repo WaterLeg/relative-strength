@@ -26,3 +26,4 @@ jobs:
     - name: Run the script
       run: |
         python -m relative_strength  # or whatever main file you need to run
+      working-directory: ./src

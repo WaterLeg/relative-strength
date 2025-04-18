@@ -23,7 +23,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run the script
+    - name: execute py script # aggregate current data
       run: |
-        python -m relative_strength  # or whatever main file you need to run
-      working-directory: ./src
+        python relative-strength.py true false ${{ secrets.API_KEY }}

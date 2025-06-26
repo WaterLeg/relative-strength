@@ -252,10 +252,22 @@ def load_prices_from_tda(securities, api_key, info = {}):
 
 
 def get_yf_data(security, start_date, end_date):
-        ticker_data = {}
-        ticker = security["ticker"]
-        escaped_ticker = escape_ticker(ticker)
-        df = yf.download(escaped_ticker, start=start_date, end=end_date, auto_adjust=True)
+    ticker_data = {}
+    ticker = security["ticker"]
+    escaped_ticker = escape_ticker(ticker)
+
+    try:
+        df = yf.download(escaped_ticker, start=start_date, end=end_date, auto_adjust=True, progress=False)
+
+        if df.empty:
+            print(f"Ticker {ticker} returned no data, skipping.")
+            return None
+
+        required_columns = ["Open", "Close", "Low", "High", "Volume"]
+        if not all(col in df.columns for col in required_columns):
+            print(f"Ticker {ticker} missing required columns, skipping.")
+            return None
+
         yahoo_response = df.to_dict()
         timestamps = list(yahoo_response["Open"].keys())
         timestamps = list(map(lambda timestamp: int(timestamp.timestamp()), timestamps))
@@ -264,21 +276,26 @@ def get_yf_data(security, start_date, end_date):
         lows = list(yahoo_response["Low"].values())
         highs = list(yahoo_response["High"].values())
         volumes = list(yahoo_response["Volume"].values())
-        candles = []
 
-        for i in range(0, len(opens)):
-            candle = {}
-            candle["open"] = opens[i]
-            candle["close"] = closes[i]
-            candle["low"] = lows[i]
-            candle["high"] = highs[i]
-            candle["volume"] = volumes[i]
-            candle["datetime"] = timestamps[i]
+        candles = []
+        for i in range(len(opens)):
+            candle = {
+                "open": opens[i],
+                "close": closes[i],
+                "low": lows[i],
+                "high": highs[i],
+                "volume": volumes[i],
+                "datetime": timestamps[i]
+            }
             candles.append(candle)
 
         ticker_data["candles"] = candles
         enrich_ticker_data(ticker_data, security)
         return ticker_data
+
+    except Exception as e:
+        print(f"Error downloading ticker {ticker}: {e}")
+        return None
 
 def load_prices_from_yahoo(securities, info = {}):
     print("*** Loading Stocks from Yahoo Finance ***")
@@ -291,6 +308,8 @@ def load_prices_from_yahoo(securities, info = {}):
         ticker = security["ticker"]
         r_start = time.time()
         ticker_data = get_yf_data(security, start_date, today)
+        if ticker_data is None:
+            continue  # Skip bad tickers
         # if not ticker in TICKER_INFO_DICT:
         #     load_ticker_info(ticker, TICKER_INFO_DICT)
         # ticker_data["industry"] = TICKER_INFO_DICT[ticker]["info"]["industry"]

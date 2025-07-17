@@ -20,6 +20,7 @@ from time import sleep
 
 from datetime import date
 from datetime import datetime
+from json.decoder import JSONDecodeError
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -257,7 +258,7 @@ def get_yf_data(security, start_date, end_date):
     escaped_ticker = escape_ticker(ticker)
 
     try:
-        df = yf.download(escaped_ticker, start=start_date, end=end_date, auto_adjust=True, progress=False)
+        df = yf.download(escaped_ticker, start=start_date, end=end_date, auto_adjust=True, progress=False, threads=False)
 
         if df.empty:
             print(f"Ticker {ticker} returned no data, skipping.")
@@ -293,6 +294,9 @@ def get_yf_data(security, start_date, end_date):
         enrich_ticker_data(ticker_data, security)
         return ticker_data
 
+    except JSONDecodeError as e:
+        print(f"Ticker {ticker} returned invalid JSON response: {e}")
+        return None
     except Exception as e:
         print(f"Error downloading ticker {ticker}: {e}")
         return None

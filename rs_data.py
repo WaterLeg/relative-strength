@@ -251,6 +251,7 @@ def load_prices_from_tda(securities, api_key, info = {}):
 
     write_price_history_file(tickers_dict)
 
+from yahoo_fin import stock_info as si
 
 def get_yf_data(security, start_date, end_date):
     ticker_data = {}
@@ -258,7 +259,9 @@ def get_yf_data(security, start_date, end_date):
     escaped_ticker = escape_ticker(ticker)
 
     try:
-        df = yf.download(escaped_ticker, start=start_date, end=end_date, auto_adjust=True, progress=False, threads=False)
+        #df = yf.download(escaped_ticker, start=start_date, end=end_date, auto_adjust=True, progress=False, threads=False)
+        # yahoo_fin returns pandas DataFrame with datetime index
+        df = si.get_data(escaped_ticker, start_date=start_date, end_date=end_date, index_as_date=True, interval="1d")
 
         if df.empty:
             print(f"Ticker {ticker} returned no data, skipping.")
@@ -269,23 +272,31 @@ def get_yf_data(security, start_date, end_date):
             print(f"Ticker {ticker} missing required columns, skipping.")
             return None
 
-        yahoo_response = df.to_dict()
-        timestamps = list(yahoo_response["Open"].keys())
-        timestamps = list(map(lambda timestamp: int(timestamp.timestamp()), timestamps))
-        opens = list(yahoo_response["Open"].values())
-        closes = list(yahoo_response["Close"].values())
-        lows = list(yahoo_response["Low"].values())
-        highs = list(yahoo_response["High"].values())
-        volumes = list(yahoo_response["Volume"].values())
-
+        #yahoo_response = df.to_dict()
+        #timestamps = list(yahoo_response["Open"].keys())
+        #timestamps = list(map(lambda timestamp: int(timestamp.timestamp()), timestamps))
+        #opens = list(yahoo_response["Open"].values())
+        #closes = list(yahoo_response["Close"].values())
+        #lows = list(yahoo_response["Low"].values())
+        #highs = list(yahoo_response["High"].values())
+        #volumes = list(yahoo_response["Volume"].values())
+        
+        # Convert DataFrame to candle format
+        timestamps = [int(ts.timestamp()) for ts in df.index]
+        opens = df["open"].tolist()
+        closes = df["close"].tolist()
+        lows = df["low"].tolist()
+        highs = df["high"].tolist()
+        volumes = df["volume"].tolist()
+        
         candles = []
         for i in range(len(opens)):
             candle = {
-                "open": opens[i],
-                "close": closes[i],
-                "low": lows[i],
-                "high": highs[i],
-                "volume": volumes[i],
+                "open": float(opens[i]),
+                "close": float(closes[i]),
+                "low": float(lows[i]),
+                "high": float(highs[i]),
+                "volume": int(volumes[i]),
                 "datetime": timestamps[i]
             }
             candles.append(candle)
@@ -298,7 +309,7 @@ def get_yf_data(security, start_date, end_date):
         print(f"Ticker {ticker} returned invalid JSON response: {e}")
         return None
     except Exception as e:
-        print(f"Error downloading ticker {ticker}: {e}")
+        print(f"Error downloading ticker {ticker} with yahoo_fin: {e}")
         return None
 
 def load_prices_from_yahoo(securities, info = {}):

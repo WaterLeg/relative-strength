@@ -9,7 +9,7 @@ import pandas_datareader.data as web
 import pickle
 import requests
 import yaml
-import yfinance as yf
+#import yfinance as yf
 import pandas as pd
 import dateutil.relativedelta
 import numpy as np
@@ -21,6 +21,7 @@ from time import sleep
 from datetime import date
 from datetime import datetime
 from json.decoder import JSONDecodeError
+from yahoo_fin import stock_info as si
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -202,15 +203,24 @@ def get_info_from_dict(dict, key):
     return value
 
 def load_ticker_info(ticker, info_dict):
-    escaped_ticker = escape_ticker(ticker)
-    info = yf.Ticker(escaped_ticker)
-    ticker_info = {
-        "info": {
-            "industry": get_info_from_dict(info.info, "industry"),
-            "sector": get_info_from_dict(info.info, "sector")
+    try:
+        #escaped_ticker = escape_ticker(ticker)
+        #info = yf.Ticker(escaped_ticker)
+    
+        # Get the company info as a DataFrame
+        info_df = si.get_company_info(ticker)
+    
+        # The DataFrame has company details in index/columns format
+        # Convert to dictionary for easy lookup
+        info_data = {index: row[0] for index, row in info_df.iterrows()}
+        
+        ticker_info = {
+            "info": {
+                "industry": get_info_from_dict(info.info, "industry"),
+                "sector": get_info_from_dict(info.info, "sector")
+            }
         }
-    }
-    info_dict[ticker] = ticker_info
+        info_dict[ticker] = ticker_info
 
 def load_prices_from_tda(securities, api_key, info = {}):
     print("*** Loading Stocks from TD Ameritrade ***")

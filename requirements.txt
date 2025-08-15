@@ -6,3 +6,5 @@ pandas_datareader==0.9.0
 beautifulsoup4==4.9.3
 PyYAML==5.4.1
 yfinance==0.1.63
+yahoo-fin==0.8.9.1
+requests_html==0.10.0

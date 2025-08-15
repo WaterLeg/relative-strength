@@ -9,7 +9,6 @@ import pandas_datareader.data as web
 import pickle
 import requests
 import yaml
-#import yfinance as yf
 import pandas as pd
 import dateutil.relativedelta
 import numpy as np
@@ -204,7 +203,7 @@ def get_info_from_dict(dict, key):
 
 def load_ticker_info(ticker, info_dict):
     try:
-        #escaped_ticker = escape_ticker(ticker)
+        escaped_ticker = escape_ticker(ticker)
         #info = yf.Ticker(escaped_ticker)
     
         # Get the company info as a DataFrame
@@ -213,14 +212,27 @@ def load_ticker_info(ticker, info_dict):
         # The DataFrame has company details in index/columns format
         # Convert to dictionary for easy lookup
         info_data = {index: row[0] for index, row in info_df.iterrows()}
+
+        quote_data = si.get_quote_table(escaped_ticker, dict_result=True)
+        industry = get_info_from_dict(quote_data, "Industry")
+        sector = get_info_from_dict(quote_data, "Sector")
+    except Exception:
+        industry = None
+        sector = None
         
-        ticker_info = {
-            "info": {
-                "industry": get_info_from_dict(info.info, "industry"),
-                "sector": get_info_from_dict(info.info, "sector")
-            }
+    #ticker_info = {
+    #    "info": {
+    #        "industry": get_info_from_dict(info.info, "industry"),
+    #        "sector": get_info_from_dict(info.info, "sector")
+    #    }
+    #}
+    ticker_info = {
+        "info": {
+            "industry": industry,
+            "sector": sector
         }
-        info_dict[ticker] = ticker_info
+    }
+    info_dict[ticker] = ticker_info
 
 def load_prices_from_tda(securities, api_key, info = {}):
     print("*** Loading Stocks from TD Ameritrade ***")

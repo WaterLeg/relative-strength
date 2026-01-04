@@ -8,12 +8,13 @@
 #yahoo-fin==0.8.9.1
 #requests_html==0.10.0
 
-yfinance==0.2.36
-pandas==1.5.3
-numpy==1.23.5
-scipy==1.10.1
-requests==2.31.0
-PyYAML==6.0
-beautifulsoup4==4.12.2
-pandas_datareader==0.10.0
+requests>=2.31.0
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+beautifulsoup4>=4.12.0
+PyYAML>=6.0
+pandas_datareader>=0.10.0
+yahoo-fin>=0.8.9.1
+lxml>=4.9.0
 

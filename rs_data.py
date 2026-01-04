@@ -305,11 +305,11 @@ def get_yf_data(security, start_date, end_date):
         
         # Convert DataFrame to candle format
         timestamps = [int(ts.timestamp()) for ts in df.index]
-        opens = df["open"].tolist()
-        closes = df["close"].tolist()
-        lows = df["low"].tolist()
-        highs = df["high"].tolist()
-        volumes = df["volume"].tolist()
+        opens = df["Open"].tolist()
+        closes = df["Close"].tolist()
+        lows = df["Low"].tolist()
+        highs = df["High"].tolist()
+        volumes = df["Volume"].tolist()
         
         candles = []
         for i in range(len(opens)):
@@ -341,7 +341,21 @@ def load_prices_from_yahoo(securities, info = {}):
     start_date = today - dt.timedelta(days=1*365+183) # 183 = 6 months
     tickers_dict = {}
     load_times = []
+
+    # --- Always load reference ticker first ---
+    ref_security = next(s for s in securities if s["ticker"] == REFERENCE_TICKER)
+    ref_data = get_yf_data(ref_security, start_date, today)
+    
+    if ref_data is None:
+        raise RuntimeError("Failed to load reference ticker data from Yahoo")
+    
+    tickers_dict[REFERENCE_TICKER] = ref_data
+    
+    # --- Load remaining tickers ---
     for idx, security in enumerate(securities):
+        if security["ticker"] == REFERENCE_TICKER:
+            continue
+    #for idx, security in enumerate(securities):
         ticker = security["ticker"]
         r_start = time.time()
         ticker_data = get_yf_data(security, start_date, today)

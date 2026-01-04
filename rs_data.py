@@ -13,6 +13,7 @@ import pandas as pd
 import dateutil.relativedelta
 import numpy as np
 import re
+import yfinance as yf
 from ftplib import FTP
 from io import StringIO
 from time import sleep
@@ -281,9 +282,9 @@ def get_yf_data(security, start_date, end_date):
     escaped_ticker = escape_ticker(ticker)
 
     try:
-        #df = yf.download(escaped_ticker, start=start_date, end=end_date, auto_adjust=True, progress=False, threads=False)
+        df = yf.download(escaped_ticker, start=start_date, end=end_date, auto_adjust=True, progress=False, threads=False)
         # yahoo_fin returns pandas DataFrame with datetime index
-        df = si.get_data(escaped_ticker, start_date=start_date, end_date=end_date, index_as_date=True, interval="1d")
+        #df = si.get_data(escaped_ticker, start_date=start_date, end_date=end_date, index_as_date=True, interval="1d")
 
         if df.empty:
             print(f"Ticker {ticker} returned no data, skipping.")

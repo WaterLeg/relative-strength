@@ -13,7 +13,6 @@ import pandas as pd
 import dateutil.relativedelta
 import numpy as np
 import re
-import yfinance as yf
 from ftplib import FTP
 from io import StringIO
 from time import sleep
@@ -282,15 +281,15 @@ def get_yf_data(security, start_date, end_date):
     escaped_ticker = escape_ticker(ticker)
 
     try:
-        df = yf.download(escaped_ticker, start=start_date, end=end_date, auto_adjust=True, progress=False, threads=False)
+        #df = yf.download(escaped_ticker, start=start_date, end=end_date, auto_adjust=True, progress=False, threads=False)
         # yahoo_fin returns pandas DataFrame with datetime index
-        #df = si.get_data(escaped_ticker, start_date=start_date, end_date=end_date, index_as_date=True, interval="1d")
+        df = si.get_data(escaped_ticker, start_date=start_date, end_date=end_date, index_as_date=True, interval="1d")
 
-        if df.empty:
+        if df is None or df.empty:
             print(f"Ticker {ticker} returned no data, skipping.")
             return None
 
-        required_columns = ["Open", "Close", "Low", "High", "Volume"]
+        required_columns = ["open", "close", "low", "high", "volume"]
         if not all(col in df.columns for col in required_columns):
             print(f"Ticker {ticker} missing required columns, skipping.")
             return None
@@ -306,11 +305,11 @@ def get_yf_data(security, start_date, end_date):
         
         # Convert DataFrame to candle format
         timestamps = [int(ts.timestamp()) for ts in df.index]
-        opens = df["Open"].tolist()
-        closes = df["Close"].tolist()
-        lows = df["Low"].tolist()
-        highs = df["High"].tolist()
-        volumes = df["Volume"].tolist()
+        opens = df["open"].tolist()
+        closes = df["close"].tolist()
+        lows = df["low"].tolist()
+        highs = df["high"].tolist()
+        volumes = df["volume"].tolist()
         
         candles = []
         for i in range(len(opens)):

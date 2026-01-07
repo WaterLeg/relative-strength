@@ -82,10 +82,10 @@ def rankings():
     stock_rs = {}
     
     if REFERENCE_TICKER not in json:
-    raise RuntimeError(
-        f"Reference ticker {REFERENCE_TICKER} missing from price data. "
-        "Yahoo Finance likely blocked the request."
-    )
+        raise RuntimeError(
+            f"Reference ticker {REFERENCE_TICKER} missing from price data. "
+            "Yahoo Finance likely blocked the request."
+        )
     
     ref = json[REFERENCE_TICKER]
     for ticker in json:

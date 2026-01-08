@@ -15,8 +15,9 @@ scipy>=1.10.0
 beautifulsoup4>=4.12.0
 PyYAML>=6.0
 pandas_datareader>=0.10.0
-yahoo-fin>=0.8.9.1
+#yahoo-fin>=0.8.9.1
 lxml>=4.9.0
-requests_html==0.10.0
+#requests_html==0.10.0
+
 
 

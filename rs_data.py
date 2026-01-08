@@ -406,43 +406,43 @@ def get_yf_data(security, start_date, end_date):
         print(f"Error downloading ticker {ticker} with yahoo_fin: {e}")
         return None
 
-def load_prices_from_yahoo(securities, info = {}):
-    print("*** Loading Stocks from Yahoo Finance ***")
-    today = date.today()
-    start = time.time()
-    start_date = today - dt.timedelta(days=1*365+183) # 183 = 6 months
-    tickers_dict = {}
-    load_times = []
+#def load_prices_from_yahoo(securities, info = {}):
+#    print("*** Loading Stocks from Yahoo Finance ***")
+#    today = date.today()
+#    start = time.time()
+#    start_date = today - dt.timedelta(days=1*365+183) # 183 = 6 months
+#    tickers_dict = {}
+#    load_times = []
 
     # --- Always load reference ticker first ---
-    ref_security = next(s for s in securities if s["ticker"] == REFERENCE_TICKER)
-    ref_data = get_yf_data(ref_security, start_date, today)
+#    ref_security = next(s for s in securities if s["ticker"] == REFERENCE_TICKER)
+#    ref_data = get_yf_data(ref_security, start_date, today)
     
-    if ref_data is None:
-        raise RuntimeError("Failed to load reference ticker data from Yahoo")
+#    if ref_data is None:
+#        raise RuntimeError("Failed to load reference ticker data from Yahoo")
     
-    tickers_dict[REFERENCE_TICKER] = ref_data
+#    tickers_dict[REFERENCE_TICKER] = ref_data
     
     # --- Load remaining tickers ---
-    for idx, security in enumerate(securities):
-        if security["ticker"] == REFERENCE_TICKER:
-            continue
-    #for idx, security in enumerate(securities):
-        ticker = security["ticker"]
-        r_start = time.time()
-        ticker_data = get_yf_data(security, start_date, today)
-        if ticker_data is None:
-            continue  # Skip bad tickers
+#    for idx, security in enumerate(securities):
+#        if security["ticker"] == REFERENCE_TICKER:
+#            continue
+#    #for idx, security in enumerate(securities):
+#        ticker = security["ticker"]
+#        r_start = time.time()
+#        ticker_data = get_yf_data(security, start_date, today)
+#        if ticker_data is None:
+#            continue  # Skip bad tickers
         # if not ticker in TICKER_INFO_DICT:
         #     load_ticker_info(ticker, TICKER_INFO_DICT)
         # ticker_data["industry"] = TICKER_INFO_DICT[ticker]["info"]["industry"]
-        now = time.time()
-        current_load_time = now - r_start
-        load_times.append(current_load_time)
-        remaining_seconds = remaining_seconds = get_remaining_seconds(load_times, idx, len(securities))
-        print_data_progress(ticker, security["universe"], idx, securities, "", time.time() - start, remaining_seconds)
-        tickers_dict[ticker] = ticker_data
-    write_price_history_file(tickers_dict)
+#        now = time.time()
+#        current_load_time = now - r_start
+#        load_times.append(current_load_time)
+#        remaining_seconds = remaining_seconds = get_remaining_seconds(load_times, idx, len(securities))
+#        print_data_progress(ticker, security["universe"], idx, securities, "", time.time() - start, remaining_seconds)
+#        tickers_dict[ticker] = ticker_data
+#    write_price_history_file(tickers_dict)
 
 def save_data(source, securities, api_key, info = {}):
     if source == "STOOQ":
@@ -452,6 +452,8 @@ def save_data(source, securities, api_key, info = {}):
 
 
 def main(forceTDA = False, api_key = API_KEY):
+    print(f"DATA_SOURCE resolved to: {DATA_SOURCE}")
+
     dataSource = DATA_SOURCE if not forceTDA else "TD_AMERITRADE"
     save_data(dataSource, SECURITIES, api_key, {"forceTDA": forceTDA})
     write_ticker_info_file(TICKER_INFO_DICT)

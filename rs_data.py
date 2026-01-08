@@ -273,6 +273,78 @@ def load_prices_from_tda(securities, api_key, info = {}):
 
     write_price_history_file(tickers_dict)
 
+def get_stooq_data(security, start_date, end_date):
+    ticker = security["ticker"]
+
+    try:
+        # Stooq uses lowercase symbols with .us suffix
+        stooq_symbol = ticker.lower() + ".us"
+
+        df = web.DataReader(
+            stooq_symbol,
+            "stooq",
+            start_date,
+            end_date
+        )
+
+        if df is None or df.empty:
+            print(f"Ticker {ticker} returned no data from Stooq.")
+            return None
+
+        # Stooq columns are capitalized
+        df = df.sort_index()
+
+        candles = []
+        for ts, row in df.iterrows():
+            candles.append({
+                "open": float(row["Open"]),
+                "close": float(row["Close"]),
+                "low": float(row["Low"]),
+                "high": float(row["High"]),
+                "volume": int(row["Volume"]),
+                "datetime": int(ts.timestamp())
+            })
+
+        ticker_data = {"candles": candles}
+        enrich_ticker_data(ticker_data, security)
+        return ticker_data
+
+    except Exception as e:
+        print(f"Stooq failed for {ticker}: {e}")
+        return None
+
+def load_prices_from_stooq(securities, info={}):
+    print("*** Loading Stocks from Stooq ***")
+
+    today = date.today()
+    start_date = today - dt.timedelta(days=548)
+
+    tickers_dict = {}
+
+    # Force reference ticker first
+    ref_security = next(s for s in securities if s["ticker"] == REFERENCE_TICKER)
+    ref_data = get_stooq_data(ref_security, start_date, today)
+
+    if ref_data is None:
+        raise RuntimeError(f"REFERENCE_TICKER {REFERENCE_TICKER} failed from Stooq")
+
+    tickers_dict[REFERENCE_TICKER] = ref_data
+
+    for security in securities:
+        ticker = security["ticker"]
+        if ticker == REFERENCE_TICKER:
+            continue
+
+        data = get_stooq_data(security, start_date, today)
+        if data is None:
+            continue
+
+        tickers_dict[ticker] = data
+
+    write_price_history_file(tickers_dict)
+
+
+
 from yahoo_fin import stock_info as si
 
 def get_yf_data(security, start_date, end_date):
@@ -373,8 +445,8 @@ def load_prices_from_yahoo(securities, info = {}):
     write_price_history_file(tickers_dict)
 
 def save_data(source, securities, api_key, info = {}):
-    if source == "YAHOO":
-        load_prices_from_yahoo(securities, info)
+    if source == "STOOQ":
+        load_prices_from_stooq(securities, info)
     elif source == "TD_AMERITRADE":
         load_prices_from_tda(securities, api_key, info)
 
